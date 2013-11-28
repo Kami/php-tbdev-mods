@@ -1,0 +1,41 @@
+###############################################
+##
+##   Title: Top 5 torrents
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: This mod will show 5 top snatched torrents
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 1 minute
+##   Files To Edit: 0
+##
+##   Included Files: 1
+##            top5_torrents.php
+##
+##   Author Notes:
+##        None
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Top 5 torrents 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  10/08/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ UPLOAD ]------------------------------------------------
+#
+
+top5_torrents.php
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

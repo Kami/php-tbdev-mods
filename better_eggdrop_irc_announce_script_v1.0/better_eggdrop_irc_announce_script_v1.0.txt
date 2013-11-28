@@ -1,0 +1,74 @@
+###############################################
+##
+##   Title: Better eggdrop irc announce script
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: Script will announce new torrents in IRC channel
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 1
+##            takeupload.php
+##
+##   Included Files: 1
+##            announce.tcl
+##
+##   Author Notes:
+##      None
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Better eggdrop irc announce script 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  08/07/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+takeupload.php
+
+#
+#-----[ FIND (line ,307) ]----------------------------------------
+#
+
+header("Location: $BASEURL/details.php?id=$id&uploaded=1");
+
+?>
+
+#
+#-----[ BEFORE, ADD ]--------------------------------------------
+#
+
+$res = mysql_query("SELECT name FROM categories WHERE id=$catid") or sqlerr();
+$arr = mysql_fetch_assoc($res);
+$cat = $arr["name"];
+$user = mysql_fetch_array(mysql_query("SELECT username FROM users WHERE id=".$CURUSER["id"]));
+$user = $user["username"];
+
+$bot['ip'] = ""; // your bot ip
+$bot['port'] = ""; // your script listen port
+$bot['password'] = ""; // password which you have set in script
+$bot['message'] = "New torrent was uploaded -> Name: \002$torrent\002 .:. Category: \002$cat\002 .:. URL: \002$DEFAULTBASEURL/details.php?id=$id"; // your message
+
+$fp = fsockopen($bot['ip'], $bot['port'], $errno, $errstr, 40);
+
+if($fp)
+{
+    fputs($fp, $bot['password'] . " " . $bot['message'] . "\n");
+    sleep(2);
+    fclose($fp);
+}
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

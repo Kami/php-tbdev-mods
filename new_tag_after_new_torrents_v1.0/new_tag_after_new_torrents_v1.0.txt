@@ -1,0 +1,153 @@
+###############################################
+##
+##   Title: New tag after new torrents
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: This mod will show text "New" after torrents in
+##                browse.php which were not yet viewable by you.
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 3
+##            include/bittorrent.php
+##            browse.php
+##            details.php
+##
+##   Included Files: 0
+##
+##   Author Notes:
+##      None
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 New tag after new torrents 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  14/06/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ RUN SQL QUERY ]------------------------------------------
+#
+
+CREATE TABLE `videno` (
+`id` INT NOT NULL AUTO_INCREMENT ,
+`idtorrenta` INT NOT NULL ,
+`iduporabnika` INT NOT NULL ,
+PRIMARY KEY ( `id` )
+)
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+include/bittorrent.php
+
+#
+#-----[ FIND (line 768) ]----------------------------------------
+#
+
+    if ($variant == "index")
+        print("<td class=\"colhead\" align=center>Upped by</td>\n");
+
+    print("</tr>\n");
+
+    while ($row = mysql_fetch_assoc($res)) {
+        $id = $row["id"];
+
+#
+#-----[ AFTER, ADD ]---------------------------------------------
+#
+
+        $iduporabnika = $CURUSER["id"];
+        $videno = mysql_query("SELECT * FROM videno WHERE idtorrenta='$id' AND iduporabnika='$iduporabnika'");
+        $stevilo = mysql_num_rows($videno);        
+        
+        if ($stevilo == 0)
+                $videnoprikaz = " <img src=\"pic/nota.gif\" border=\"0\" />(<font color=#c5090f><b>New</b></font>)"; // Text you want to show after torrent name - example "New"
+        else
+                $videnoprikaz = "";
+
+#
+#-----[ FIND (line 760) ]----------------------------------------
+#
+
+$dispname = htmlspecialchars($row["name"]);
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+$dispname = htmlspecialchars($row["name"]) . $videnoprikaz;
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+details.php
+
+#
+#-----[ FIND (line 32) ]-----------------------------------------
+#
+
+function dltable($name, $arr, $torrent)
+{
+
+#
+#-----[ BEFORE, ADD ]--------------------------------------------
+#
+
+dbconn();
+
+$iduporabnika = $CURUSER["id"];
+$videno = mysql_query("SELECT * FROM videno WHERE idtorrenta='$id' AND iduporabnika='$id'");
+$stevilo = mysql_num_rows($videno);
+
+if ($stevilo == 0)
+{
+    mysql_query("INSERT INTO videno (idtorrenta, iduporabnika) VALUES ('$id', '$iduporabnika')");
+}
+
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+browse.php
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+
+?>
+
+#
+#-----[ BEFORE, ADD ]--------------------------------------------
+#
+
+echo "<a href=\"browse.php?akcija=videno\"><b>Mark all new torrents as visible</b></a>"; // Click here if you want to mark all torrents as visible
+
+$akcija = $_GET['akcija'];
+
+if ($akcija == "videno")
+{
+    $rezultat = mysql_query("SELECT id FROM torrents");
+    
+    while ($vrstica = mysql_fetch_array($rezultat))
+    {
+        $iduporabnika = $CURUSER["id"];
+        mysql_query("INSERT INTO videno (idtorrenta, iduporabnika) VALUES ('$vrstica[id]', '$iduporabnika')");
+    }
+    header("Location: browse.php");
+}
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

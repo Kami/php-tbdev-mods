@@ -1,0 +1,65 @@
+###############################################
+##
+##   Title: Auto pm torrent owner upon torrent delete
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: This mod is really simple, just a few lines of code,
+##                but it's usefull if you have log disabled for normal
+##                users and you want to uploaders know why their torrent
+##                was deleted
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 1 minute
+##   Files To Edit: 1
+##            delete.php
+##
+##   Included Files: 0
+##
+##   Author Notes:
+##      None
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Auto pm torrent owner upon torrent delete 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  30/06/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+delete.php
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+
+deletetorrent($id);
+
+write_log("Torrent $id ($row[name]) was deleted by $CURUSER[username] ($reasonstr)\n");
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+if ($CURUSER["id"] != $row["owner"])
+{
+    $datum = get_date_time();
+    $idup = $row["owner"];
+    $sporocilo = "Torrent $id ($row[name]) has been deleted.\n
+    Reason: $reasonstr";
+    mysql_query("INSERT INTO messages (sender, receiver, added, msg) VALUES ('0', '$idup', '$datum', '$sporocilo')");
+}
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

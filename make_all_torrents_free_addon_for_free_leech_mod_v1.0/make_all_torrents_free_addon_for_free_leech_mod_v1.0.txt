@@ -1,0 +1,168 @@
+###############################################
+##
+##   Title: Make all torrents free addon for Free leech
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: With this mod you can make all torrents free for a
+##                certain period of time.
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 3
+##            include/bittorrent.php
+##            announce.php
+##            details.php
+##
+##   Included Files: 1
+##            freeleech.php
+##
+##   Author Notes:
+##          You need to have free leech mod version 1.1 installed to use
+##          this mod
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Make all torrents free addon for Free leech 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  11/02/2007 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ RUN SQL QUERY ]------------------------------------------
+#
+
+CREATE TABLE `config` (
+`name` varchar(255) NOT NULL default '',
+`value` varchar(255) NOT NULL default '',
+PRIMARY KEY (`name`)
+) TYPE=MyISAM
+
+INSERT INTO `config` ( `name` , `value` ) VALUES ('allfree', '0');
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+announce.php
+
+#
+#-----[ FIND (line 170) ]----------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+    {
+        $freelech = mysql_query("SELECT * FROM torrents WHERE id = '$torrentid' AND freeleech = '1'");
+        
+        if (mysql_num_rows($freelech) == 1)
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis WHERE id=$userid") or err("Tracker error 3");
+        }
+        else
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+        }
+    }
+
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+    {
+        $freelech = mysql_query("SELECT * FROM torrents WHERE id = '$torrentid' AND freeleech = '1'");
+        $allfree = mysql_result(mysql_query("SELECT value FROM config WHERE name = 'allfree'"), 0);
+        
+        if (mysql_num_rows($freelech) == 1 || $allfree == 1)
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis WHERE id=$userid") or err("Tracker error 3");
+        }
+        else
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+        }
+    }
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+include/bittorrent.php
+
+#
+#-----[ FIND (line 760) ]----------------------------------------
+#
+
+    $freeleech = mysql_result(mysql_query("SELECT freeleech FROM torrents WHERE id = '$id'"), 0);
+
+    if ($freeleech == 1)
+    {
+        $dispname = htmlspecialchars($row["name"]) . " [Freeleech]";
+    }
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    $freeleech = mysql_result(mysql_query("SELECT freeleech FROM torrents WHERE id = '$id'"), 0);
+    $allfree = mysql_result(mysql_query("SELECT value FROM config WHERE name = 'allfree'"), 0);
+            
+    if ($freeleech == 1 || $allfree == 1)
+    {
+        $dispname = htmlspecialchars($row["name"]) . " [Freeleech]";
+    }
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+details.php
+
+#
+#-----[ FIND (line 186) ]----------------------------------------
+#
+
+    if (!empty($row["descr"]))
+    {
+        $rezultat = mysql_num_rows(mysql_query("SELECT * FROM torrents WHERE id = '$id' AND freeleech = '1'"));
+        
+        if ($rezultat == 1)
+        {
+            $row["descr"] .= "\n[color=red]This torrent is freeleech so only upload counts![/color]";
+        }
+        tr("Description", str_replace(array("\n", "  "), array("<br>\n", "  "), format_comment(format_urls(htmlspecialchars($row["descr"])))), 1);
+    }
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    if (!empty($row["descr"]))
+    {
+        $rezultat = mysql_num_rows(mysql_query("SELECT * FROM torrents WHERE id = '$id' AND freeleech = '1'"));
+        $allfree = mysql_result(mysql_query("SELECT value FROM config WHERE name = 'allfree'"), 0);
+
+        if ($rezultat == 1 || $allfree == 1)
+        {
+            $row["descr"] .= "\n[color=red]This torrent is freeleech so only upload counts![/color]";
+        }
+        tr("Description", str_replace(array("\n", "  "), array("<br>\n", "  "), format_comment(format_urls(htmlspecialchars($row["descr"])))), 1);
+    }
+
+#
+#-----[ UPLOAD ]------------------------------------------------
+#
+
+freeleech.php
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

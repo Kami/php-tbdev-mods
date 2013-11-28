@@ -1,0 +1,150 @@
+###############################################
+##
+##   Title: Free leech mod
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: With this mod you can make torrents free. This
+##                means that only upload counts.
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 3
+##            include/bittorrent.php
+##            announce.php
+##            userdetails.php
+##
+##   Included Files: 1
+##            freeleech.php
+##
+##   Author Notes:
+##      None
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Free leech mod 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  11/06/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ RUN SQL QUERY ]------------------------------------------
+#
+
+ALTER TABLE `torrents` ADD `freeleech` VARCHAR( 3 ) DEFAULT 'no' NOT NULL;
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+announce.php
+
+#
+#-----[ FIND (line 170) ]----------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+        mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+    {
+        $freelech = mysql_query("SELECT * FROM torrents WHERE id='$torrentid' AND freeleech='yes'");
+        if (mysql_num_rows($freelech) == 1)
+        {
+                    mysql_query("UPDATE users SET uploaded = uploaded + $upthis WHERE id=$userid") or err("Tracker error 3");
+        }
+        else
+        {
+                    mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+        }
+    }
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+include/bittorrent.php
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+
+$dispname = htmlspecialchars($row["name"]);
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+$dispname = format_comment(htmlspecialchars($row["name"]));
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+userdetails.php
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+
+  while ($a = mysql_fetch_assoc($r))
+  {
+        $r2 = mysql_query("SELECT name, image FROM categories WHERE id=$a[category]") or sqlerr(__FILE__, __LINE__);
+        $a2 = mysql_fetch_assoc($r2);
+        $cat = "<img src=\"/pic/$a2[image]\" alt=\"$a2[name]\">";
+      $torrents .= "<tr><td style='padding: 0px'>$cat</td><td><a href=details.php?id=" . $a["id"] . "&hit=1><b>" . htmlspecialchars($a["name"]) . "</b></a></td>" .
+        "<td align=right>$a[seeders]</td><td align=right>$a[leechers]</td></tr>\n";
+  }
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+  while ($a = mysql_fetch_assoc($r))
+  {
+  $r2 = mysql_query("SELECT name, image FROM categories WHERE id=$a[category]") or sqlerr(__FILE__, __LINE__);
+  $a2 = mysql_fetch_assoc($r2);
+  $cat = "<img src=\"/pic/$a2[image]\" alt=\"$a2[name]\">";
+   $torrents .= "<tr><td style='padding: 0px'>$cat</td><td><a href=details.php?id=" . $a["id"] . "&hit=1><b>" .
+
+format_comment(htmlspecialchars($a["name"])) . "</b></a></td>" .
+  "<td align=right>$a[seeders]</td><td align=right>$a[leechers]</td></tr>\n";
+  }
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+    $ret .= "<tr><td style='padding: 0px'><img src=\"pic/$catimage\" alt=\"$catname\" width=42 height=42></td>\n" .
+        "<td><a href=details.php?id=$arr[torrent]&hit=1><b>" . htmlspecialchars($arr["torrentname"]) .
+        "</b></a></td><td align=center>$ttl</td><td align=center>$size</td><td align=right>$seeders</td><td align=right>$leechers</td><td align=center>$uploaded</td>\n" .
+        "<td align=center>$downloaded</td><td align=center>$ratio</td></tr>\n";
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+	$ret .= "<tr><td style='padding: 0px'><img src=\"pic/$catimage\" alt=\"$catname\" width=42 height=42></td>\n" .
+        "<td><a href=details.php?id=$arr[torrent]&hit=1><b>" . format_comment(htmlspecialchars($arr["torrentname"])) .
+        "</b></a></td><td align=center>$ttl</td><td align=center>$size</td><td align=right>$seeders</td><td align=right>$leechers</td><td align=center>$uploaded</td>\n" .
+        "<td align=center>$downloaded</td><td align=center>$ratio</td></tr>\n";
+		
+#
+#-----[ UPLOAD ]------------------------------------------------
+#
+
+freeleech.php
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

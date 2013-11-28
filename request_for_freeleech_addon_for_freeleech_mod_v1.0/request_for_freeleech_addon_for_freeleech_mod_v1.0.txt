@@ -1,0 +1,104 @@
+###############################################
+##
+##   Title: Request for freeleech addon for Free Leech mod
+##   Version: 1.0
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: If you use this mod, user can tick "Request for freeleech"
+##                while he is uploading and then administrators can approve
+##                or reject user request in free leech request panel (if they
+##                approve it, mod will make torrent free leech and will send
+##                message to uploader that request for free leech for this torrent
+##                was approved else if they reject it torrent won't be free leech and
+##                uploader will get message that request for free leech for this torrent
+##                was rejected).
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 2
+##            takeupload.php
+##            upload.php
+##
+##   Included Files: 1
+##            freeleechprosnje.php
+##
+##   Author Notes:
+##          Only works with free leech mod version 1.0
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Request for freeleech addon for Free Leech mod 1.0 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  11/06/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ RUN SQL QUERY ]------------------------------------------
+#
+
+CREATE TABLE `zaprosifreeleech` (
+`id` int(11) NOT NULL auto_increment,
+`idtorrenta` int(11) NOT NULL default '0',
+`zaprosil` int(11) NOT NULL default '0',
+`status` enum('approved','rejected','undecided') default 'undecided',
+PRIMARY KEY (`id`)
+)
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+upload.php
+
+#
+#-----[ FIND (line 39) ]----------------------------------------
+#
+
+tr("Type", $s, 1);
+
+#
+#-----[ AFTER, ADD ]--------------------------------------------
+#
+
+tr("Request for freeleech", "<input type=\"checkbox\" name=\"zaprosi\" value=\"da\"", 1);
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+takeupload.php
+
+#
+#-----[ FIND ]---------------------------------------------------
+#
+
+header("Location: $BASEURL/details.php?id=$id&uploaded=1");
+
+?>
+
+#
+#-----[ BEFORE, ADD ]--------------------------------------------
+#
+
+if ($_POST['zaprosi'] == "da")
+{
+    $uporabnik = $CURUSER["id"];
+    mysql_query("INSERT INTO zaprosifreeleech (idtorrenta, zaprosil) VALUES ('$id', '$uporabnik')");
+}
+	
+#
+#-----[ UPLOAD ]------------------------------------------------
+#
+
+freeleechprosnje.php
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 

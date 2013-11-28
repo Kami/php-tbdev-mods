@@ -1,0 +1,147 @@
+###############################################
+##
+##   Title: Free leech mod
+##   Version: 1.1
+##   Author: Kami <kami@slo-freebsd.org> - http://www.kamiserv.biz
+##   Description: With this mod you can make torrents free. This
+##                means that only upload counts.
+##   Compatibility: TBDEV.NET-01-03-06 
+##
+##   Installation Level: Easy
+##   Installation Time: 5 minutes
+##   Files To Edit: 3
+##            include/bittorrent.php
+##            announce.php
+##            details.php
+##
+##   Included Files: 2
+##            pic/free.gif
+##            freeleech.php
+##
+##   Author Notes:
+##          If you want to show text after torrents name instead
+##          of image, use free_leech_v1.1 (text).txt
+##
+##   Support: http://www.tbdev.net
+##   Copyright: Copyright © 2006 Free leech mod 1.1 - Kami
+##
+###############################################
+##
+##  Version History
+##
+##  20/01/2007 - Version 1.1
+##         - Code fixes
+##         - "This torrent is freeleech so only upload counts" text in details.php
+##         - Dynamic [Freeleech] text after torrents name
+##
+##  11/06/2006 - Version 1.0
+##         - Initial release
+##
+###############################################
+##   This mod is released under the GPL License.
+###############################################
+
+#
+#-----[ RUN SQL QUERY ]------------------------------------------
+#
+
+ALTER TABLE `torrents` ADD `freeleech` ENUM('0', '1') DEFAULT '0' NOT NULL;
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+announce.php
+
+#
+#-----[ FIND (line 170) ]----------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+        mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    if ($upthis > 0 || $downthis > 0)
+    {
+        $freelech = mysql_query("SELECT * FROM torrents WHERE id = '$torrentid' AND freeleech = '1'");
+        
+        if (mysql_num_rows($freelech) == 1)
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis WHERE id=$userid") or err("Tracker error 3");
+        }
+        else
+        {
+            mysql_query("UPDATE users SET uploaded = uploaded + $upthis, downloaded = downloaded + $downthis WHERE id=$userid") or err("Tracker error 3");
+        }
+    }
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+include/bittorrent.php
+
+#
+#-----[ FIND (line 767) ]----------------------------------------
+#
+
+    print("\"><b>$dispname</b></a>\n");
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    $freeleech = mysql_result(mysql_query("SELECT freeleech FROM torrents WHERE id = '$id'"), 0);
+            
+    if ($freeleech == 1)
+    {
+        $freeimage = "<img src=\"pic/free.gif\" />";
+    }
+    else
+    {
+        $freeimage = "";
+    }
+
+    print("\"><b>$dispname</b></a> $freeimage\n");
+
+#
+#-----[ OPEN ]---------------------------------------------------
+#
+
+details.php
+
+#
+#-----[ FIND (line 186) ]----------------------------------------
+#
+
+if (!empty($row["descr"]))
+            tr("Description", str_replace(array("\n", "  "), array("<br>\n", "  "), format_urls(htmlspecialchars($row["descr"]))), 1);
+
+#
+#-----[ REPLACE WITH ]--------------------------------------------
+#
+
+    if (!empty($row["descr"]))
+    {
+        $rezultat = mysql_num_rows(mysql_query("SELECT * FROM torrents WHERE id = '$id' AND freeleech = '1'"));
+        
+        if ($rezultat == 1)
+        {
+            $row["descr"] .= "\n[color=red]This torrent is freeleech so only upload counts![/color]";
+        }
+        tr("Description", str_replace(array("\n", "  "), array("<br>\n", "  "), format_comment(format_urls(htmlspecialchars($row["descr"])))), 1);
+    }
+
+#
+#-----[ UPLOAD ]------------------------------------------------
+#
+
+freeleech.php
+pic/free.gif
+
+#
+#-----[ SAVE & CLOSE ALL FILES ]---------------------------------
+# 
